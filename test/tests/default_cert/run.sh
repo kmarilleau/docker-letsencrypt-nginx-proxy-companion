@@ -20,12 +20,20 @@ function cleanup {
 }
 trap cleanup EXIT
 
+function check_default_cert_existence {
+  docker exec "$le_container_name" [[ -f "/etc/nginx/certs/default.crt" ]]
+}
+
 function default_cert_fingerprint {
-  docker exec "$le_container_name" openssl x509 -in "/etc/nginx/certs/default.crt" -fingerprint -noout
+  if check_default_cert_existence; then
+    docker exec "$le_container_name" openssl x509 -in "/etc/nginx/certs/default.crt" -fingerprint -noout
+  fi
 }
 
 function default_cert_subject {
-  docker exec "$le_container_name" openssl x509 -in "/etc/nginx/certs/default.crt" -subject -noout
+  if check_default_cert_existence; then
+    docker exec "$le_container_name" openssl x509 -in "/etc/nginx/certs/default.crt" -subject -noout
+  fi
 }
 
 user_cn="user-provided"
