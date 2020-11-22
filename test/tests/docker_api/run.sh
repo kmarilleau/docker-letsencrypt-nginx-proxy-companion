@@ -84,7 +84,7 @@ case $SETUP in
             check_nginx_proxy_container_run; \
             get_nginx_proxy_container' 2>&1
 
-  cat > ${TRAVIS_BUILD_DIR}/test/tests/docker_api/expected-std-out.txt <<EOF
+  cat > ${GITHUB_WORKSPACE}/test/tests/docker_api/expected-std-out.txt <<EOF
 Container $nginx_vol received exec_start: sh -c /app/docker-entrypoint.sh /usr/local/bin/docker-gen /app/nginx.tmpl /etc/nginx/conf.d/default.conf; /usr/sbin/nginx -s reload
 $nginx_vol
 Container $nginx_env received exec_start: sh -c /app/docker-entrypoint.sh /usr/local/bin/docker-gen /app/nginx.tmpl /etc/nginx/conf.d/default.conf; /usr/sbin/nginx -s reload
@@ -247,7 +247,7 @@ EOF
             get_docker_gen_container; \
             get_nginx_proxy_container;' 2>&1
 
-    cat > ${TRAVIS_BUILD_DIR}/test/tests/docker_api/expected-std-out.txt <<EOF
+    cat > ${GITHUB_WORKSPACE}/test/tests/docker_api/expected-std-out.txt <<EOF
 Container $docker_gen received signal 1
 Container $nginx_vol received signal 1
 $docker_gen

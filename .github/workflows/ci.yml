@@ -1,0 +1,76 @@
+name: Build
+
+on: [push, pull_request]
+
+env:
+  IMAGE: jrcs/letsencrypt-nginx-proxy-companion
+  NGINX_CONTAINER_NAME: nginx-proxy
+  DOCKER_GEN_CONTAINER_NAME: nginx-proxy-gen
+  TEST_DOMAINS: le1.wtf,le2.wtf,le3.wtf
+  DOCKER_COMPOSE_VERSION: 1.24.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Build Image
+        run: docker build -t "$IMAGE" .
+      - name: Inspect Image
+        run: docker inspect "$IMAGE"
+      - name: Get simp_le Version
+        run: docker run --rm "$IMAGE" simp_le --version
+      - name: Test simp_le
+        run: docker run --rm "$IMAGE" simp_le -v --test
+      - name: List Docker Images
+        run: docker images
+      - name: Export Image Artifact
+        run: docker image save $IMAGE -o image.tgz
+      - name: Upload Image Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: image.tgz
+          path: image.tgz
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        setup: [ 2containers, 3containers ]
+  
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Update Docker Compose
+        run: test/github_actions/update-docker-compose.sh
+      - name: Clone Test Dependencies
+        uses: actions/checkout@v2
+        with:
+          repository: docker-library/official-images
+          path: official-images
+      - name: Setup Boulder
+        run: sudo -E test/setup/setup-boulder.sh
+      - name: Setup TEST
+        env:
+          SETUP: ${{ matrix.setup }}
+        run: echo $SETUP
+      - name: Setup NGINX Proxy
+        env:
+          SETUP: ${{ matrix.setup }}
+        run: sudo -E test/setup/setup-nginx-proxy.sh
+      - run: docker pull nginx:alpine
+      - name: Download Builded Image
+        uses: actions/download-artifact@v2
+        with:
+          name: image.tgz
+      - name: Import Builded Image
+        run: docker import image.tgz $IMAGE
+      - name: Test Image
+        run: official-images/test/run.sh "$IMAGE"
+      - name: Test Image
+        run: test/run.sh "$IMAGE"
+      # - if: ${{ failure() }}
+      - run: test/github_actions/containers-logs.sh
