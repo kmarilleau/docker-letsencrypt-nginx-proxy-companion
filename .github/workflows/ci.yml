@@ -1,4 +1,4 @@
-name: Build
+name: Test
 
 on: [push, pull_request]
 
@@ -57,7 +57,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        os: [ ubuntu-16.04, ubuntu-18.04, ubuntu-20.04 ]
         setup: [ 2containers, 3containers ]
     runs-on: ${{ matrix.os }}
   
@@ -78,7 +78,8 @@ jobs:
         env:
           SETUP: ${{ matrix.setup }}
         run: test/setup/setup-nginx-proxy.sh
-      - run: docker pull nginx:alpine
+      - run: docker ps -a
+      - run: docker exec -i nginx-proxy find /etc/nginx/certs
       # ADD BUILDED IMAGE
       - name: Download Builded Image
         uses: actions/download-artifact@v2

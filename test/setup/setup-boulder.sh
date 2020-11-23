@@ -5,11 +5,8 @@ set -e
 acme_endpoint='http://boulder:4001/directory'
 
 setup_boulder() {
-  export GOPATH=${GITHUB_WORKSPACE}/go
-  [[ ! -d $GOPATH/src/github.com/letsencrypt/boulder ]] \
-    && git clone https://github.com/letsencrypt/boulder \
-      "$GOPATH/src/github.com/letsencrypt/boulder"
-  pushd "$GOPATH/src/github.com/letsencrypt/boulder"
+  git clone https://github.com/letsencrypt/boulder
+  pushd boulder
   git checkout release-2020-10-19
   if [[ "$(uname)" == 'Darwin' ]]; then
     # Set Standard Ports
