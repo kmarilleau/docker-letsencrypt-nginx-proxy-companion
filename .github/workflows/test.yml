@@ -57,7 +57,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-20.04] # [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
         setup: [2containers, 3containers]
         test-name:
           [
@@ -106,4 +106,5 @@ jobs:
       - name: Integration Testing
         run: test/run.sh -t ${{ matrix.test-name }} "$IMAGE"
       - if: ${{ failure() }}
-        run: test/github_actions/containers-logs.sh
+        name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
